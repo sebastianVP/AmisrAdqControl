@@ -11,7 +11,7 @@ from kivy.clock import Clock
 # =========================
 # CONFIG MQTT (EDITAR)
 # =========================
-MQTT_HOST  = "radaramisr14.s1.eu.hivemq.cloud"
+MQTT_HOST  = "ef5003dc4f0742d693f4d47946133d80.s1.eu.hivemq.cloud"
 MQTT_PORT  = 8883
 MQTT_USER  = "magic"
 MQTT_PASS  = "4v4ld3zJROamisr"

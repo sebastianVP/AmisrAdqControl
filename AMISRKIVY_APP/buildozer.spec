@@ -7,13 +7,13 @@ title = AMISR-14 Control
 package.name = amisr_control
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.alexander
+package.domain = org.amisr_control
 
 # (str) Source code where the main.py live
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,jpeg,kv,atlas
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -247,6 +247,19 @@ fullscreen = 0
 # (str) screenOrientation to set for the main activity.
 # Valid values can be found at https://developer.android.com/guide/topics/manifest/activity-element
 #android.manifest.orientation = fullSensor
+
+
+# (str) Android release keystore file (for signing)
+android.release_keystore = /home/soporte/Documents/AmisrAdqControl/AMISRKIVY_APP/amisr14app.keystore
+
+# (str) Android release key alias
+android.release_keyalias = amisrapp
+
+# (str) Android release keystore password
+android.release_keystore_password = 4v4ld3zJRO4598
+
+# (str) Android release key alias password
+android.release_keyalias_password = 4v4ld3zJRO4598
 
 # (list) Android additional libraries to copy into libs/armeabi
 #android.add_libs_armeabi = libs/android/*.so
