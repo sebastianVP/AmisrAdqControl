@@ -1,0 +1,147 @@
+#:import dp kivy.metrics.dp
+
+<RadarLayout>:
+    orientation: "vertical"
+    padding: dp(20)
+    spacing: dp(12)
+
+    # Fondo con degradado profundo
+    canvas.before:
+        Color:
+            rgba: 0.05, 0.05, 0.07, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # =========================
+    # 1. HEADER (Expandido al 100%)
+    # =========================
+    BoxLayout:
+        size_hint_y: 0.12
+        orientation: "horizontal"
+        padding: [dp(20), 0]
+        spacing: dp(20)
+        
+        # El logo se queda a la izquierda
+        Image:
+            source: "logo_amisr_14.png"
+            size_hint_x: 0.15  # Le damos un ancho fijo pequeño
+            allow_stretch: True
+            keep_ratio: True
+        
+        # El Label ahora tomará TODO el espacio restante
+        Label:
+            text: "SISTEMA DE CONTROL RADAR AMISR-14"
+            font_size: "24sp"
+            bold: True
+            # CLAVE: Alineamos el texto a la izquierda pero 
+            # permitimos que la caja ocupe todo el ancho
+            text_size: self.size 
+            halign: "center"
+            valign: "middle"
+            color: 1, 1, 1, 1
+
+    # =========================
+    # 2. BODY (Visualizador - 48%)
+    # =========================
+    # Aquí es donde la imagen se verá realmente grande
+    AnchorLayout:
+        size_hint_y: 0.48
+        anchor_x: "center"
+        anchor_y: "center"
+        
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 0.02
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [20]
+
+        Image:
+            source: "body_image_radar.jpeg"
+            allow_stretch: True
+            keep_ratio: True
+            # Esta imagen ahora domina el centro de la app
+
+    # =========================
+    # 3. STATUS PANEL (18%) - Texto de Conexión Resaltado
+    # =========================
+    BoxLayout:
+        orientation: "vertical"
+        size_hint_y: 0.18  # Aumentado ligeramente del 0.15 original
+        padding: [dp(15), dp(10)]
+        spacing: dp(5)
+        
+        canvas.before:
+            Color:
+                rgba: 0.12, 0.13, 0.17, 1
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [15]
+
+        # Mensaje de Conexión (Broker) - AHORA GIGANTE
+        Label:
+            id: lbl_broker
+            text: "BUSCANDO SERVIDOR..."
+            font_size: "26sp"  # <--- Antes era 12sp. ¡Gran diferencia!
+            bold: True
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+
+        # Mensaje de Estado del Radar
+        Label:
+            id: lbl_estado
+            text: "SISTEMA STANDBY"
+            font_size: "16sp" # Reducido un poco para dar prioridad al de arriba
+            bold: False
+            color: 0.6, 0.6, 0.6, 1
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+
+    # =========================
+    # 4. ACTIONS (Botones - 20%)
+    # =========================
+    BoxLayout:
+        orientation: "horizontal" # Cambiado a horizontal para ahorrar espacio vertical
+        size_hint_y: 0.20
+        spacing: dp(15)
+        padding: [0, dp(10)]
+
+        Button:
+            text: "ENCENDER"
+            bold: True
+            background_normal: ""
+            background_color: 0, 0, 0, 0
+            on_press: root.encender()
+            canvas.before:
+                Color:
+                    rgba: (0.1, 0.7, 0.3, 1) if self.state == 'normal' else (0.05, 0.5, 0.2, 1)
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [12]
+
+        Button:
+            text: "APAGAR"
+            bold: True
+            background_normal: ""
+            background_color: 0, 0, 0, 0
+            on_press: root.apagar()
+            canvas.before:
+                Color:
+                    rgba: (0.8, 0.2, 0.2, 1) if self.state == 'normal' else (0.6, 0.1, 0.1, 1)
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [12]
+
+    # Footer
+    Label:
+        text: "CONTROL INTERFACE V2.0 • IGP"
+        size_hint_y: 0.05
+        font_size: "9sp"
+        color: 0.4, 0.4, 0.4, 1
