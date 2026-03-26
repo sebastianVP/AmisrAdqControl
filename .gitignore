@@ -1,0 +1,28 @@
+# password
+.env
+
+# Buildozer
+.buildozer/
+bin/
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.swp
+
+# Entornos
+venv/
+env/
+
+# VSCode (opcional)
+.vscode/
+
+# OS
+.DS_Store
+.keystore
