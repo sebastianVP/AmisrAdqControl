@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# UBICACION C:Documents and Settings\radar\My Documents\app_python
 
 import sys
 import time

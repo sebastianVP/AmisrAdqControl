@@ -7,6 +7,7 @@ import paho.mqtt.client as mqtt
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
+import certifi
 
 # =========================
 # CONFIG MQTT (EDITAR)
@@ -26,7 +27,8 @@ class MQTTClient:
         self.callback_estado = callback_estado
         self.client = mqtt.Client(client_id="radar_app")
         self.client.username_pw_set(MQTT_USER, MQTT_PASS)
-        self.client.tls_set(tls_version=ssl.PROTOCOL_TLS)
+        #self.client.tls_set(tls_version=ssl.PROTOCOL_TLS)#cambio
+        self.client.tls_set( ca_certs=certifi.where(),tls_version=ssl.PROTOCOL_TLS)
 
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect

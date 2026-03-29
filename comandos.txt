@@ -1,0 +1,9 @@
+ 2081  adb devices
+ 2112  adb install -r bin/amisr_control-0.1-arm64-v8a-debug.apk 
+ 2113  adb shell monkey -p org.amisr_control.amisr_control -c android.intent.category.LAUNCHER 1
+ 2114  adb logcat | grep python
+ 2115  buildozer android clean
+ 2116  buildozer android debug deploy run
+ 2117  buildozer android clean
+ 2118  buildozer android debug deploy run
+ 2119  history
