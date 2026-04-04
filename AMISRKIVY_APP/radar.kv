@@ -1,147 +1,958 @@
 #:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+#:import Clock kivy.clock.Clock
 
-<RadarLayout>:
-    orientation: "vertical"
-    padding: dp(20)
-    spacing: dp(12)
+# ============================================================
+#  RADAR AMISR-14 — Control Interface v3.0
+#  Estética: Panel de control científico / industrial oscuro
+# ============================================================
 
-    # Fondo con degradado profundo
-    canvas.before:
+<ScanlineEffect@Widget>:
+    canvas:
         Color:
-            rgba: 0.05, 0.05, 0.07, 1
+            rgba: 1, 1, 1, 0.018
         Rectangle:
             pos: self.pos
             size: self.size
 
-    # =========================
-    # 1. HEADER (Expandido al 100%)
-    # =========================
+# Tecla reutilizable del teclado en pantalla
+<Tecla@Button>:
+    font_size: sp(14)
+    bold: True
+    color: 0.85, 0.9, 1.0, 1
+    background_normal: ""
+    background_color: 0, 0, 0, 0
+    canvas.before:
+        Color:
+            rgba: (0.16, 0.21, 0.30, 1) if self.state == 'normal' else (0.25, 0.32, 0.44, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(6)]
+
+# ---- Login Screen -----------------------------------------
+<LoginScreen>:
+    orientation: "vertical"
+    padding: dp(0)
+    spacing: dp(0)
+
+    # Propiedad que indica que campo esta activo ('user' o 'pass')
+    # Se referencia en el canvas.before de los botones-campo
+    campo_activo: "user"
+
+
+    canvas.before:
+        Color:
+            rgba: 0.04, 0.05, 0.07, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        # Accent line top
+        Color:
+            rgba: 0.0, 0.72, 0.58, 1
+        Rectangle:
+            pos: self.x, self.top - dp(3)
+            size: self.width, dp(3)
+
+    # ---- Header ---
     BoxLayout:
-        size_hint_y: 0.12
-        orientation: "horizontal"
-        padding: [dp(20), 0]
-        spacing: dp(20)
-        
-        # El logo se queda a la izquierda
+        size_hint_y: None
+        height: dp(90)
+        padding: [dp(30), dp(20)]
+        spacing: dp(16)
+
         Image:
             source: "logo_amisr_14.png"
-            size_hint_x: 0.15  # Le damos un ancho fijo pequeño
-            allow_stretch: True
-            keep_ratio: True
-        
-        # El Label ahora tomará TODO el espacio restante
-        Label:
-            text: "SISTEMA DE CONTROL RADAR AMISR-14"
-            font_size: "24sp"
-            bold: True
-            # CLAVE: Alineamos el texto a la izquierda pero 
-            # permitimos que la caja ocupe todo el ancho
-            text_size: self.size 
-            halign: "center"
-            valign: "middle"
-            color: 1, 1, 1, 1
+            size_hint_x: None
+            width: dp(60)
+            fit_mode: "contain"
 
-    # =========================
-    # 2. BODY (Visualizador - 48%)
-    # =========================
-    # Aquí es donde la imagen se verá realmente grande
-    AnchorLayout:
-        size_hint_y: 0.48
-        anchor_x: "center"
-        anchor_y: "center"
-        
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(2)
+
+            Label:
+                text: "SISTEMA DE CONTROL"
+                font_size: sp(11)
+                bold: False
+                color: 0.45, 0.55, 0.65, 1
+                halign: "left"
+                text_size: self.size
+                valign: "bottom"
+
+            Label:
+                text: "RADAR AMISR-14"
+                font_size: sp(20)
+                bold: True
+                color: 0.92, 0.95, 1.0, 1
+                halign: "left"
+                text_size: self.size
+                valign: "top"
+
+    # ---- Spacer ---
+    Widget:
+        size_hint_y: 0.08
+
+    # ---- Login Card + teclado en pantalla ---
+    ScrollView:
+        size_hint_y: 0.88
+        do_scroll_x: False
+
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height
+            padding: [dp(16), dp(8)]
+            spacing: dp(10)
+
+            # -- Card de credenciales --
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_y: None
+                height: dp(200)
+                padding: dp(20)
+                spacing: dp(10)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.09, 0.11, 0.15, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(16)]
+                    Color:
+                        rgba: 0.0, 0.72, 0.58, 1
+                    RoundedRectangle:
+                        pos: self.x, self.y
+                        size: dp(4), self.height
+                        radius: [dp(2)]
+
+                Label:
+                    text: "ACCESO AUTORIZADO"
+                    font_size: sp(12)
+                    bold: True
+                    color: 0.0, 0.72, 0.58, 1
+                    halign: "left"
+                    text_size: self.size
+                    valign: "middle"
+                    size_hint_y: None
+                    height: dp(20)
+
+                # Campo USUARIO
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(42)
+                    spacing: dp(8)
+
+                    Label:
+                        text: "USUARIO"
+                        font_size: sp(9)
+                        color: 0.4, 0.5, 0.6, 1
+                        size_hint_x: None
+                        width: dp(78)
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    # Display del campo — se activa con on_press
+                    Button:
+                        id: campo_user
+                        text: ""
+                        font_size: sp(13)
+                        bold: True
+                        color: 0.88, 0.92, 1.0, 1
+                        halign: "left"
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.activar_campo('user')
+                        canvas.before:
+                            Color:
+                                rgba: (0.0, 0.72, 0.58, 0.3) if root.campo_activo == 'user' else (0.14, 0.18, 0.24, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+                # Campo CONTRASEÑA
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(42)
+                    spacing: dp(8)
+
+                    Label:
+                        text: "CLAVE"
+                        font_size: sp(9)
+                        color: 0.4, 0.5, 0.6, 1
+                        size_hint_x: None
+                        width: dp(78)
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    Button:
+                        id: campo_pass
+                        text: ""
+                        font_size: sp(13)
+                        bold: True
+                        color: 0.88, 0.92, 1.0, 1
+                        halign: "left"
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.activar_campo('pass')
+                        canvas.before:
+                            Color:
+                                rgba: (0.0, 0.72, 0.58, 0.3) if root.campo_activo == 'pass' else (0.14, 0.18, 0.24, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+                # Error + botón login
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(42)
+                    spacing: dp(8)
+
+                    Label:
+                        id: lbl_login_error
+                        text: ""
+                        font_size: sp(10)
+                        color: 0.95, 0.3, 0.3, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    Button:
+                        text: "ENTRAR"
+                        size_hint_x: None
+                        width: dp(90)
+                        font_size: sp(12)
+                        bold: True
+                        color: 0.04, 0.05, 0.07, 1
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.intentar_login()
+                        canvas.before:
+                            Color:
+                                rgba: (0.0, 0.72, 0.58, 1) if self.state == 'normal' else (0.0, 0.55, 0.44, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+            # -- Teclado en pantalla --
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_y: None
+                height: dp(260)
+                padding: [dp(6), dp(6)]
+                spacing: dp(5)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.07, 0.09, 0.12, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(14)]
+
+                # Fila 1: q w e r t y u i o p
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_y: None
+                    height: dp(44)
+                    Tecla:
+                        text: "q"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "w"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "e"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "r"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "t"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "y"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "u"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "i"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "o"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "p"
+                        on_press: root.tecla(self.text)
+
+                # Fila 2: a s d f g h j k l
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_y: None
+                    height: dp(44)
+                    Widget:
+                        size_hint_x: None
+                        width: dp(18)
+                    Tecla:
+                        text: "a"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "s"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "d"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "f"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "g"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "h"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "j"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "k"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "l"
+                        on_press: root.tecla(self.text)
+                    Widget:
+                        size_hint_x: None
+                        width: dp(18)
+
+                # Fila 3: z x c v b n m + numeros
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_y: None
+                    height: dp(44)
+                    Tecla:
+                        text: "z"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "x"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "c"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "v"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "b"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "n"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "m"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "_"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "."
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "-"
+                        on_press: root.tecla(self.text)
+
+                # Fila 4: numeros
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_y: None
+                    height: dp(44)
+                    Tecla:
+                        text: "1"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "2"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "3"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "4"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "5"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "6"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "7"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "8"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "9"
+                        on_press: root.tecla(self.text)
+                    Tecla:
+                        text: "0"
+                        on_press: root.tecla(self.text)
+
+                # Fila 5: borrar + espacio
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_y: None
+                    height: dp(44)
+
+                    Button:
+                        text: "BORRAR"
+                        size_hint_x: 0.35
+                        font_size: sp(10)
+                        bold: True
+                        color: 0.9, 0.9, 1.0, 1
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.tecla('<<')
+                        canvas.before:
+                            Color:
+                                rgba: (0.55, 0.1, 0.1, 1) if self.state == 'normal' else (0.4, 0.05, 0.05, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+                    Button:
+                        text: "ESPACIO"
+                        size_hint_x: 0.45
+                        font_size: sp(10)
+                        bold: True
+                        color: 0.7, 0.75, 0.8, 1
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.tecla(' ')
+                        canvas.before:
+                            Color:
+                                rgba: (0.14, 0.18, 0.26, 1) if self.state == 'normal' else (0.2, 0.25, 0.35, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+                    Button:
+                        text: "LIMPIAR"
+                        size_hint_x: 0.3
+                        font_size: sp(10)
+                        bold: True
+                        color: 0.7, 0.75, 0.8, 1
+                        background_normal: ""
+                        background_color: 0, 0, 0, 0
+                        on_press: root.tecla('CLR')
+                        canvas.before:
+                            Color:
+                                rgba: (0.14, 0.18, 0.26, 1) if self.state == 'normal' else (0.2, 0.25, 0.35, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [dp(8)]
+
+    # ---- Footer ---
+    Label:
+        text: "INSTITUTO GEOFÍSICO DEL PERÚ  •  IGP"
+        size_hint_y: None
+        height: dp(32)
+        font_size: sp(8)
+        color: 0.22, 0.28, 0.36, 1
+
+
+# ---- Main Dashboard Screen --------------------------------
+<RadarLayout>:
+    orientation: "vertical"
+    padding: dp(0)
+    spacing: dp(0)
+
+    canvas.before:
+        Color:
+            rgba: 0.04, 0.05, 0.07, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # ========================
+    # TOP BAR
+    # ========================
+    BoxLayout:
+        size_hint_y: None
+        height: dp(64)
+        padding: [dp(16), dp(8)]
+        spacing: dp(12)
+
         canvas.before:
             Color:
-                rgba: 1, 1, 1, 0.02
-            RoundedRectangle:
+                rgba: 0.06, 0.08, 0.11, 1
+            Rectangle:
                 pos: self.pos
                 size: self.size
-                radius: [20]
+            Color:
+                rgba: 0.0, 0.72, 0.58, 1
+            Rectangle:
+                pos: self.x, self.y
+                size: self.width, dp(2)
 
         Image:
-            source: "body_image_radar.png"
-            allow_stretch: True
-            keep_ratio: True
-            # Esta imagen ahora domina el centro de la app
+            source: "logo_amisr_14.png"
+            size_hint_x: None
+            width: dp(44)
+            fit_mode: "contain"
 
-    # =========================
-    # 3. STATUS PANEL (18%) - Texto de Conexión Resaltado
-    # =========================
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(1)
+
+            Label:
+                text: "RADAR AMISR-14"
+                font_size: sp(16)
+                bold: True
+                color: 0.92, 0.95, 1.0, 1
+                halign: "left"
+                text_size: self.size
+                valign: "bottom"
+
+            Label:
+                id: lbl_usuario_activo
+                text: "Usuario: —"
+                font_size: sp(9)
+                color: 0.35, 0.5, 0.45, 1
+                halign: "left"
+                text_size: self.size
+                valign: "top"
+
+        Widget:
+
+        # Logout button
+        Button:
+            text: "SALIR"
+            size_hint_x: None
+            width: dp(68)
+            font_size: sp(10)
+            bold: True
+            color: 0.6, 0.65, 0.7, 1
+            background_normal: ""
+            background_color: 0, 0, 0, 0
+            on_press: root.cerrar_sesion()
+
+            canvas.before:
+                Color:
+                    rgba: (0.12, 0.16, 0.22, 1) if self.state == 'normal' else (0.18, 0.24, 0.3, 1)
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(8)]
+
+    # ========================
+    # BODY — SCROLLABLE
+    # ========================
+    ScrollView:
+        do_scroll_x: False
+
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height
+            padding: dp(14)
+            spacing: dp(12)
+
+            # --- Radar Image Preview ---
+            AnchorLayout:
+                size_hint_y: None
+                height: dp(170)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.07, 0.09, 0.13, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(14)]
+                    Color:
+                        rgba: 0.12, 0.16, 0.22, 1
+                    Line:
+                        rounded_rectangle: [self.x+dp(1), self.y+dp(1), self.width-dp(2), self.height-dp(2), dp(13)]
+                        width: dp(0.8)
+
+                Image:
+                    source: "body_image_radar.png"
+                    fit_mode: "contain"
+
+            # --- STATUS ROW: Conexión + Estado Radar ---
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: dp(80)
+                spacing: dp(10)
+
+                # Conexión Broker
+                BoxLayout:
+                    orientation: "vertical"
+                    padding: dp(12)
+                    spacing: dp(4)
+
+                    canvas.before:
+                        Color:
+                            rgba: 0.07, 0.09, 0.13, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(12)]
+
+                    Label:
+                        text: "CONEXIÓN"
+                        font_size: sp(8)
+                        color: 0.35, 0.45, 0.55, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+                        size_hint_y: None
+                        height: dp(16)
+
+                    Label:
+                        id: lbl_broker
+                        text: "BUSCANDO..."
+                        font_size: sp(14)
+                        bold: True
+                        color: 0.8, 0.85, 0.4, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                # Estado Radar ON/OFF
+                BoxLayout:
+                    orientation: "vertical"
+                    padding: dp(12)
+                    spacing: dp(4)
+                    size_hint_x: 0.5
+
+                    canvas.before:
+                        Color:
+                            rgba: 0.07, 0.09, 0.13, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(12)]
+
+                    Label:
+                        text: "RADAR"
+                        font_size: sp(8)
+                        color: 0.35, 0.45, 0.55, 1
+                        halign: "center"
+                        text_size: self.size
+                        valign: "middle"
+                        size_hint_y: None
+                        height: dp(16)
+
+                    Label:
+                        id: lbl_radar_estado
+                        text: "OFF"
+                        font_size: sp(22)
+                        bold: True
+                        color: 0.55, 0.2, 0.2, 1
+                        halign: "center"
+                        text_size: self.size
+                        valign: "middle"
+
+            # --- Feedback de último comando ---
+            Label:
+                id: lbl_estado
+                text: "Sistema en espera de comando"
+                size_hint_y: None
+                height: dp(28)
+                font_size: sp(11)
+                color: 0.38, 0.48, 0.58, 1
+                halign: "left"
+                text_size: self.size
+                valign: "middle"
+                padding: [dp(4), 0]
+
+            # --- ESTADO DEL RADAR (visible solo si ON) ---
+            BoxLayout:
+                id: panel_parametros
+                orientation: "vertical"
+                size_hint_y: None
+                height: dp(0)
+                opacity: 0
+                spacing: dp(8)
+
+                # Título sección
+                Label:
+                    text: "ESTADO DEL RADAR"
+                    size_hint_y: None
+                    height: dp(22)
+                    font_size: sp(9)
+                    bold: True
+                    color: 0.0, 0.72, 0.58, 0.8
+                    halign: "left"
+                    text_size: self.size
+                    valign: "middle"
+
+                # --- Fila 1: STATUS RF (ancho completo) ---
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(52)
+                    padding: [dp(14), dp(8)]
+                    spacing: dp(10)
+
+                    canvas.before:
+                        Color:
+                            rgba: 0.07, 0.09, 0.13, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(10)]
+                        Color:
+                            rgba: 0.0, 0.72, 0.58, 0.5
+                        Rectangle:
+                            pos: self.x, self.y
+                            size: dp(3), self.height
+
+                    Label:
+                        text: "STATUS RF"
+                        size_hint_x: None
+                        width: dp(74)
+                        font_size: sp(8)
+                        bold: True
+                        color: 0.35, 0.45, 0.55, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    Label:
+                        id: lbl_potencia
+                        text: "— RF"
+                        font_size: sp(15)
+                        bold: True
+                        color: 0.0, 0.85, 0.68, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                # --- Fila 2: MODE (ancho completo, texto largo) ---
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(52)
+                    padding: [dp(14), dp(8)]
+                    spacing: dp(10)
+
+                    canvas.before:
+                        Color:
+                            rgba: 0.07, 0.09, 0.13, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(10)]
+                        Color:
+                            rgba: 0.2, 0.5, 0.95, 0.5
+                        Rectangle:
+                            pos: self.x, self.y
+                            size: dp(3), self.height
+
+                    Label:
+                        text: "MODE"
+                        size_hint_x: None
+                        width: dp(74)
+                        font_size: sp(8)
+                        bold: True
+                        color: 0.35, 0.45, 0.55, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    Label:
+                        id: lbl_corriente
+                        text: "— Mode"
+                        font_size: sp(11)
+                        bold: True
+                        color: 0.4, 0.7, 1.0, 1
+                        halign: "left"
+                        # text_size ligado al ancho para permitir wrapping
+                        text_size: self.width, None
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                # --- Fila 3: ARRAY (ancho completo, color dinamico) ---
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: dp(52)
+                    padding: [dp(14), dp(8)]
+                    spacing: dp(10)
+
+                    canvas.before:
+                        Color:
+                            rgba: 0.07, 0.09, 0.13, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(10)]
+                        Color:
+                            rgba: 0.95, 0.65, 0.0, 0.5
+                        Rectangle:
+                            pos: self.x, self.y
+                            size: dp(3), self.height
+
+                    Label:
+                        text: "ARRAY"
+                        size_hint_x: None
+                        width: dp(74)
+                        font_size: sp(8)
+                        bold: True
+                        color: 0.35, 0.45, 0.55, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                    Label:
+                        id: lbl_voltaje
+                        text: "— Array"
+                        font_size: sp(13)
+                        bold: True
+                        color: 1.0, 0.8, 0.2, 1
+                        halign: "left"
+                        text_size: self.size
+                        valign: "middle"
+
+                # Última actualización
+                Label:
+                    id: lbl_ultima_act
+                    text: "Ultima actualizacion: —"
+                    size_hint_y: None
+                    height: dp(20)
+                    font_size: sp(9)
+                    color: 0.3, 0.4, 0.5, 1
+                    halign: "right"
+                    text_size: self.size
+                    valign: "middle"
+
+            # --- BOTONES DE CONTROL ---
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: dp(56)
+                spacing: dp(12)
+
+                Button:
+                    id: btn_encender
+                    text: "ENCENDER"
+                    font_size: sp(13)
+                    bold: True
+                    color: 0.04, 0.05, 0.07, 1
+                    background_normal: ""
+                    background_color: 0, 0, 0, 0
+                    on_press: root.encender()
+
+                    canvas.before:
+                        Color:
+                            rgba: (0.0, 0.72, 0.58, 1) if self.state == 'normal' else (0.0, 0.55, 0.44, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(12)]
+
+                Button:
+                    id: btn_apagar
+                    text: "APAGAR"
+                    font_size: sp(13)
+                    bold: True
+                    color: 0.92, 0.92, 0.95, 1
+                    background_normal: ""
+                    background_color: 0, 0, 0, 0
+                    on_press: root.apagar()
+
+                    canvas.before:
+                        Color:
+                            rgba: (0.65, 0.12, 0.12, 1) if self.state == 'normal' else (0.48, 0.08, 0.08, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(12)]
+
+            # --- LOG DE ACTIVIDAD ---
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_y: None
+                height: dp(180)
+                padding: dp(12)
+                spacing: dp(8)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.07, 0.09, 0.13, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(12)]
+
+                Label:
+                    text: "REGISTRO DE ACTIVIDAD"
+                    size_hint_y: None
+                    height: dp(20)
+                    font_size: sp(9)
+                    bold: True
+                    color: 0.3, 0.42, 0.55, 1
+                    halign: "left"
+                    text_size: self.size
+                    valign: "middle"
+
+                Widget:
+                    size_hint_y: None
+                    height: dp(1)
+                    canvas:
+                        Color:
+                            rgba: 0.12, 0.16, 0.22, 1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                ScrollView:
+                    do_scroll_x: False
+                    Label:
+                        id: lbl_log
+                        text: "— Sistema iniciado —"
+                        font_size: sp(10)
+                        color: 0.5, 0.6, 0.65, 1
+                        halign: "left"
+                        valign: "top"
+                        text_size: self.width, None
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        padding: [dp(4), dp(2)]
+
+    # ========================
+    # BOTTOM BAR
+    # ========================
     BoxLayout:
-        orientation: "vertical"
-        size_hint_y: 0.18  # Aumentado ligeramente del 0.15 original
-        padding: [dp(15), dp(10)]
-        spacing: dp(5)
-        
+        size_hint_y: None
+        height: dp(28)
+
         canvas.before:
             Color:
-                rgba: 0.12, 0.13, 0.17, 1
-            RoundedRectangle:
+                rgba: 0.05, 0.07, 0.09, 1
+            Rectangle:
                 pos: self.pos
                 size: self.size
-                radius: [15]
 
-        # Mensaje de Conexión (Broker) - AHORA GIGANTE
         Label:
-            id: lbl_broker
-            text: "BUSCANDO SERVIDOR..."
-            font_size: "26sp"  # <--- Antes era 12sp. ¡Gran diferencia!
-            bold: True
+            text: "CONTROL INTERFACE V3.0  •  IGP  •  AMISR-14"
+            font_size: sp(8)
+            color: 0.2, 0.28, 0.36, 1
             halign: "center"
-            valign: "middle"
             text_size: self.size
-
-        # Mensaje de Estado del Radar
-        Label:
-            id: lbl_estado
-            text: "SISTEMA STANDBY"
-            font_size: "16sp" # Reducido un poco para dar prioridad al de arriba
-            bold: False
-            color: 0.6, 0.6, 0.6, 1
-            halign: "center"
             valign: "middle"
-            text_size: self.size
-
-    # =========================
-    # 4. ACTIONS (Botones - 20%)
-    # =========================
-    BoxLayout:
-        orientation: "horizontal" # Cambiado a horizontal para ahorrar espacio vertical
-        size_hint_y: 0.20
-        spacing: dp(15)
-        padding: [0, dp(10)]
-
-        Button:
-            text: "ENCENDER"
-            bold: True
-            background_normal: ""
-            background_color: 0, 0, 0, 0
-            on_press: root.encender()
-            canvas.before:
-                Color:
-                    rgba: (0.1, 0.7, 0.3, 1) if self.state == 'normal' else (0.05, 0.5, 0.2, 1)
-                RoundedRectangle:
-                    pos: self.pos
-                    size: self.size
-                    radius: [12]
-
-        Button:
-            text: "APAGAR"
-            bold: True
-            background_normal: ""
-            background_color: 0, 0, 0, 0
-            on_press: root.apagar()
-            canvas.before:
-                Color:
-                    rgba: (0.8, 0.2, 0.2, 1) if self.state == 'normal' else (0.6, 0.1, 0.1, 1)
-                RoundedRectangle:
-                    pos: self.pos
-                    size: self.size
-                    radius: [12]
-
-    # Footer
-    Label:
-        text: "CONTROL INTERFACE V2.0 • IGP"
-        size_hint_y: 0.05
-        font_size: "9sp"
-        color: 0.4, 0.4, 0.4, 1
